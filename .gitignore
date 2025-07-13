@@ -1,0 +1,13 @@
+# Ignore common Power Platform /AML files
+*.tmp
+*.bak
+*.log
+
+# VS Code workspace files (if using VS Code)
+.vscode/    
+
+# Node /CLI cache files if using pac CLI
+node_modules/
+npm-debug.log*
+
+# Ignore Zip files
