@@ -9,6 +9,7 @@ This repo includes:
 - `solution.xml` – Metadata for the solution
 - `customizations.xml` – Customization data for all included components
 - `Workflows/` – Folder containing flow definitions (e.g., `*.workflow.json`)
+- `Exported Solution/` - Folder containing the original exported solution zip file
 
 
 ## 🚀 How to Import
