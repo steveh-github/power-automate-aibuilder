@@ -1,0 +1,240 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_sharepointonline_1": {
+        "runtimeSource": "invoker",
+        "connection": {
+          "connectionReferenceLogicalName": "sh_sharedsharepointonline_ca6d5"
+        },
+        "api": {
+          "name": "shared_sharepointonline"
+        }
+      },
+      "shared_commondataserviceforapps": {
+        "runtimeSource": "embedded",
+        "connection": {
+          "connectionReferenceLogicalName": "contoso_sharedcommondataserviceforapps_a023f"
+        },
+        "api": {
+          "name": "shared_commondataserviceforapps"
+        }
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        },
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        }
+      },
+      "triggers": {
+        "manual": {
+          "metadata": {
+            "operationMetadataId": "d2cf0bf5-dd4f-4201-9250-77fc390afd99"
+          },
+          "type": "Request",
+          "kind": "Button",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {},
+              "required": []
+            }
+          }
+        }
+      },
+      "actions": {
+        "Get_Files_(Properties_Only)": {
+          "runAfter": {
+            "Initialize_Line_Description": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "07968d84-405c-4224-b42e-b8d25a7d39bf"
+          },
+          "type": "OpenApiConnection",
+          "inputs": {
+            "host": {
+              "connectionName": "shared_sharepointonline_1",
+              "operationId": "GetFileItems",
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline"
+            },
+            "parameters": {
+              "dataset": "https://hallsey.sharepoint.com/sites/AIBuilder",
+              "table": "b8099575-692e-4ddc-af84-22ba3727e6c3",
+              "folderPath": "/Shared Documents"
+            },
+            "authentication": {
+              "type": "Raw",
+              "value": "@json(decodeBase64(triggerOutputs().headers['X-MS-APIM-Tokens']))['$ConnectionKey']"
+            }
+          }
+        },
+        "For_Each_File": {
+          "foreach": "@outputs('Get_Files_(Properties_Only)')?['body/value']",
+          "actions": {
+            "Get_File_(Contents)": {
+              "runAfter": {},
+              "metadata": {
+                "operationMetadataId": "137f2bbc-af1f-496f-b9ae-9a25e4eb0033"
+              },
+              "type": "OpenApiConnection",
+              "inputs": {
+                "host": {
+                  "connectionName": "shared_sharepointonline_1",
+                  "operationId": "GetFileContent",
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline"
+                },
+                "parameters": {
+                  "dataset": "https://hallsey.sharepoint.com/sites/AIBuilder",
+                  "id": "@items('For_Each_File')?['{Identifier}']",
+                  "inferContentType": true
+                },
+                "authentication": {
+                  "type": "Raw",
+                  "value": "@json(decodeBase64(triggerOutputs().headers['X-MS-APIM-Tokens']))['$ConnectionKey']"
+                }
+              }
+            },
+            "Add_New_Row_To_Dataverse": {
+              "runAfter": {
+                "Apply_to_each": [
+                  "Succeeded"
+                ]
+              },
+              "metadata": {
+                "operationMetadataId": "95711816-d3b1-41dd-a25b-9f18c8e7bb1e"
+              },
+              "type": "OpenApiConnection",
+              "inputs": {
+                "host": {
+                  "connectionName": "shared_commondataserviceforapps",
+                  "operationId": "CreateRecord",
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+                },
+                "parameters": {
+                  "entityName": "sh_invoicesinformations",
+                  "item/sh_invoicename": "@items('For_Each_File')?['{Name}']",
+                  "item/sh_customername": "@outputs('Process_File_with_AI')?['body/responsev2/predictionOutput/result/fields/customerName/valueText']",
+                  "item/sh_linedescription": "@variables('Line Description')",
+                  "item/sh_tax": "@outputs('Process_File_with_AI')?['body/responsev2/predictionOutput/result/fields/totalTax/valueNumber']",
+                  "item/sh_totalamount": "@outputs('Process_File_with_AI')?['body/responsev2/predictionOutput/result/fields/invoiceTotal/valueNumber']"
+                },
+                "authentication": {
+                  "type": "Raw",
+                  "value": "@json(decodeBase64(triggerOutputs().headers['X-MS-APIM-Tokens']))['$ConnectionKey']"
+                }
+              }
+            },
+            "Process_File_with_AI": {
+              "runAfter": {
+                "Clear_Line_Description": [
+                  "Succeeded"
+                ]
+              },
+              "metadata": {
+                "operationMetadataId": "9aaf679f-21bf-4db5-8ada-5ae75315a486",
+                "flowSystemMetadata": {
+                  "portalOperationId": "aibuilderpredict_invoiceprocessingpretrained",
+                  "portalOperationGroup": "aibuilder",
+                  "portalOperationApiDisplayNameOverride": "AI Builder",
+                  "portalOperationIconOverride": "https://content.powerapps.com/resource/makerx/static/pauto/images/designeroperations/aiBuilderNew.51dbdb6b.png",
+                  "portalOperationBrandColorOverride": "#0A76C4",
+                  "portalOperationApiTierOverride": "Standard"
+                }
+              },
+              "type": "OpenApiConnection",
+              "inputs": {
+                "host": {
+                  "connectionName": "shared_commondataserviceforapps",
+                  "operationId": "aibuilderpredict_invoiceprocessingpretrained",
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+                },
+                "parameters": {
+                  "item/requestv2/base64Encoded": "@body('Get_File_(Contents)')"
+                },
+                "authentication": {
+                  "type": "Raw",
+                  "value": "@json(decodeBase64(triggerOutputs().headers['X-MS-APIM-Tokens']))['$ConnectionKey']"
+                }
+              }
+            },
+            "Clear_Line_Description": {
+              "runAfter": {
+                "Get_File_(Contents)": [
+                  "Succeeded"
+                ]
+              },
+              "metadata": {
+                "operationMetadataId": "c8a538e0-00b4-4e71-8188-2298cb238573"
+              },
+              "type": "SetVariable",
+              "inputs": {
+                "name": "Line Description",
+                "value": " "
+              }
+            },
+            "Apply_to_each": {
+              "foreach": "@outputs('Process_File_with_AI')?['body/responsev2/predictionOutput/result/items']",
+              "actions": {
+                "Append_To_Line_Description": {
+                  "runAfter": {},
+                  "metadata": {
+                    "operationMetadataId": "d2f6773d-10cd-413d-8ea0-16afcb373fe6"
+                  },
+                  "type": "AppendToStringVariable",
+                  "inputs": {
+                    "name": "Line Description",
+                    "value": "@items('Apply_to_each')?['fields/description/valueText']"
+                  }
+                }
+              },
+              "runAfter": {
+                "Process_File_with_AI": [
+                  "Succeeded"
+                ]
+              },
+              "metadata": {
+                "operationMetadataId": "0465a3d6-4150-47da-9cf8-7f2ceaec24ef"
+              },
+              "type": "Foreach"
+            }
+          },
+          "runAfter": {
+            "Get_Files_(Properties_Only)": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "374634ee-59bb-40c0-bcd2-a81ec09625dd"
+          },
+          "type": "Foreach"
+        },
+        "Initialize_Line_Description": {
+          "runAfter": {},
+          "metadata": {
+            "operationMetadataId": "e6a50c62-4aa3-445b-9d43-595761c6a6d6"
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "Line Description",
+                "type": "string"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "templateName": ""
+  },
+  "schemaVersion": "1.0.0.0"
+}
