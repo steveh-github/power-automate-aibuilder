@@ -1,89 +1,34 @@
-# 🌀 Power Automate Flow: Invoice Extraction from SharePoint
+# Power Automate Flow – Exported Solution
 
-This repository contains an exported Microsoft Power Automate flow that loops through all PDF documents in a **specified SharePoint folder** and extracts structured invoice data using the **AI Builder Prebuilt Invoice Processing model**.
-
----
+This repository contains an exported Power Automate flow, packaged as part of a solution.
 
 ## 📦 Contents
 
-- `InvoiceExtractionFlow.zip` – Exported Power Automate solution (ZIP format)
-- `README.md` – Documentation for understanding and deploying the flow
+This repo includes:
 
----
+- `solution.xml` – Metadata for the solution
+- `customizations.xml` – Customization data for all included components
+- `Workflows/` – Folder containing flow definitions (e.g., `*.workflow.json`)
 
-## 🚀 Use Case
 
-This flow is designed to:
+## 🚀 How to Import
 
-1. Traverse all files within a specific SharePoint folder
-2. Identify and process only **PDF** documents
-3. Extract invoice metadata using AI Builder (e.g., Invoice ID, Vendor, Total)
-4. Log, notify, or store extracted data (e.g., SharePoint list, Excel, email, etc.)
+To import this solution back into Power Platform:
 
-Ideal for businesses or departments that handle **bulk invoice uploads to SharePoint** and need automated data extraction.
+1. Go to **Power Apps > Solutions**
+2. Click **Import**
+3. Select the exported `.zip` (if needed, you can re-zip the contents of this repo)
+4. Follow the import wizard
 
----
+## 💡 Notes
 
-## 🧠 Power Automate Features Used
+- This repo is useful for version-controlling Power Platform solutions
+- The structure follows the default format from manual or PAC CLI exports
+- You can enhance this with **Power Platform CLI** for ALM automation
 
-- SharePoint connector:
-  - `Get files (properties only)`
-  - `Get file content`
-- Control:
-  - `Apply to each`
-  - `Condition`
-- AI Builder:
-  - `Extract information from invoices`
-- Optional:
-  - `Compose`, `Append to array`, `Send an email`, `Create item` in SharePoint list
+## 🛠 Tools Used
 
----
-
-## 🔧 Requirements
-
-- Power Automate license with **AI Builder credits**
-- Access to a SharePoint site and folder containing invoice PDFs
-- Power Platform environment for importing the solution
-- (Optional) SharePoint list or storage target for extracted data
-
----
-
-## 🛠️ How to Import the Flow
-
-1. Open [Power Automate](https://make.powerautomate.com/)
-2. Navigate to **Solutions** → Click `Import solution`
-3. Upload the `InvoiceExtractionFlow.zip`
-4. Resolve any connection references (e.g., SharePoint, AI Builder)
-5. Save and test the flow
-
----
-
-## 📌 Notes
-
-- Only PDF files are processed; you can customize MIME/type filtering as needed
-- AI Builder will consume credits per page processed
-- Extraction accuracy may vary based on invoice layout complexity
-
----
-
-## 📄 License
-
-This project is released under the MIT License. See [LICENSE](LICENSE) for more information.
-
----
-
-## ✍️ Author
-
-Built and exported using **Power Automate Desktop & Cloud**, and version-controlled with **GitHub Desktop**.
-
----
-
-## 📬 Feedback / Contributions
-
-Feel free to open issues or submit PRs for enhancements like:
-- CSV export
-- Email notification on failed AI parse
-- Support for multiple invoice formats
-
----
-
+- Power Automate
+- Power Platform Solutions
+- Git & GitHub
+- GitHub Desktop
