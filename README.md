@@ -17,7 +17,7 @@ To import this solution back into Power Platform:
 
 1. Go to **Power Apps > Solutions**
 2. Click **Import**
-3. Select the exported `.zip` (if needed, you can re-zip the contents of this repo)
+3. Select the exported `.zip` (or if needed, you can re-zip the contents of this repo)
 4. Follow the import wizard
 
 ## 💡 Notes
